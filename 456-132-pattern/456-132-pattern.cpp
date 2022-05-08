@@ -1,5 +1,6 @@
 class Solution {
 public:
+    //找当前最优的(s2,s3)对，实时更新s3的值，栈中存放所有满足的s2的值
     bool find132pattern(vector<int>& nums) {
         int len = nums.size();
         if(len<3) return false;
