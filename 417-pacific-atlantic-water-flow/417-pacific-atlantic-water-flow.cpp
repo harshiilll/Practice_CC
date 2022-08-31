@@ -1,44 +1,56 @@
 class Solution {
 public:
-    int m,n;
-    
-    bool s(vector<vector<bool>>& ocean, int i, int j, vector<vector<int>>& ht){
-        
-        if (i<0 || j<0 || i==m || j==n || ht[i][j]==100004) return false;
-        if (ocean[i][j]) return true;
-        
-        int k = ht[i][j];
-        ht[i][j]=100004;
-        bool zz = false;
-        if (i>0 && ht[i-1][j]<=k)   zz = zz || s(ocean,i-1,j,ht);
-        if (j>0 && ht[i][j-1]<=k)   zz = zz || s(ocean,i,j-1,ht);
-        if (i<m-1 && ht[i+1][j]<=k) zz = zz || s(ocean,i+1,j,ht);
-        if (j<n-1 && ht[i][j+1]<=k) zz = zz || s(ocean,i,j+1,ht);
-        
-        ocean[i][j]=zz;
-        ht[i][j]=k;
-        return zz;
-        
-    }
-    
-    vector<vector<int>> pacificAtlantic(vector<vector<int>>& ht) {
-        m = ht.size();
-        n = ht[0].size();
-        vector<vector<bool>> pac(m, vector<bool> (n,false));
-        vector<vector<bool>> atl(m, vector<bool> (n,false));
-        for (int i=0; i<m; i++){
-            pac[i][0]=true;
-            atl[i][n-1]=true;
+    vector<vector<int>> pacificAtlantic(vector<vector<int>>& heights) {
+    const int m = heights.size();
+    const int n = heights[0].size();
+    const vector<int> dirs{0, 1, 0, -1, 0};
+    vector<vector<int>> ans;
+    queue<pair<int, int>> qP;
+    queue<pair<int, int>> qA;
+    vector<vector<bool>> seenP(m, vector<bool>(n));
+    vector<vector<bool>> seenA(m, vector<bool>(n));
+
+    auto bfs = [&](queue<pair<int, int>>& q, vector<vector<bool>>& seen) {
+      while (!q.empty()) {
+        const auto [i, j] = q.front();
+        q.pop();
+        const int h = heights[i][j];
+        for (int k = 0; k < 4; ++k) {
+          const int x = i + dirs[k];
+          const int y = j + dirs[k + 1];
+          if (x < 0 || x == m || y < 0 || y == n)
+            continue;
+          if (seen[x][y] || heights[x][y] < h)
+            continue;
+          q.emplace(x, y);
+          seen[x][y] = true;
         }
-        for (int i=0; i<n; i++){
-            pac[0][i]=true;
-            atl[m-1][i]=true;
-        }
-        vector<vector<int>> res;
-        for (int i=0; i<m; i++){
-            for (int j=0; j<n; j++){
-                if (s(pac,i,j,ht) && s(atl,i,j,ht)) res.push_back({i,j});
-            }
-        }return res;
+      }
+    };
+
+    for (int i = 0; i < m; ++i) {
+      qP.emplace(i, 0);
+      qA.emplace(i, n - 1);
+      seenP[i][0] = true;
+      seenA[i][n - 1] = true;
     }
+
+    for (int j = 0; j < n; ++j) {
+      qP.emplace(0, j);
+      qA.emplace(m - 1, j);
+      seenP[0][j] = true;
+      seenA[m - 1][j] = true;
+    }
+
+    bfs(qP, seenP);
+    bfs(qA, seenA);
+
+    for (int i = 0; i < m; ++i)
+      for (int j = 0; j < n; ++j)
+        if (seenP[i][j] && seenA[i][j])
+          ans.push_back({i, j});
+
+    return ans;
+  }
+    
 };
